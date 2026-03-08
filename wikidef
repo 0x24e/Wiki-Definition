@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+if [[ -n $1 ]]; then	
+
+	word=$1
+	url="https://en.wikipedia.org/wiki/$word"
+	
+	search=$(curl -s -L "https://en.wikipedia.org/wiki/$word" | awk '
+	BEGIN { p=0; buf="" }
+	/<div class="mw-parser-output">/ { p=1 }
+	p==1 && /<p>/ && !/<table/ && !/class="mw-empty-elt"/ {
+	gsub(/<[^>]+>/, "");                
+	gsub(/&[^;]{1,8};/, " ");           
+	gsub(/[[:cntrl:]]/, "");            
+	gsub(/[[:space:]]+/, " ");          
+	gsub(/^[[:space:]]+|[[:space:]]+$/, "");  # trim
+	if (length > 60) {                  
+		print
+		exit
+		}
+		}
+		')
+	
+	if [[ -z $search ]]; then
+		echo
+		echo -e "\e[31m[!] Nothing found for \e[1;34m'$word'\e[0m"
+		echo
+	else
+		echo  
+		echo -e "\e[1;33m[?] Wiki Result :\e[0m\n$search"
+		echo 
+		echo -e "The URL : \e[1;34m$url\e[0m"
+	fi
+
+else
+	echo -e "\e[31m[!] Usage : ./program [word]\e[0m"
+fi
+
